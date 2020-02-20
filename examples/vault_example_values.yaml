@@ -1,0 +1,22 @@
+name: vault-example-generic-chart
+containerImage:
+  repository: nginx
+  tag: 1.17.8
+  imagePullPolicy: Always
+serviceAccount:
+  create: true
+  name: vault-k8s-integration-template
+deploymentAnnotations:
+  vault.hashicorp.com/agent-inject: "true"
+  vault.hashicorp.com/role: "vault-k8s-integration-template"
+  vault.hashicorp.com/agent-inject-secret-foobar.txt: "secret/helloworld"
+  vault.hashicorp.com/agent-inject-template-foobar.txt: |
+    {{- with secret "secret/helloworld" -}}
+    exampleuser: {{ .Data.data.username }}
+    test:
+    {{- end }}
+  vault.hashicorp.com/agent-inject-secret-secret.txt: "secret/helloworld"
+  vault.hashicorp.com/agent-inject-template-secret.txt: |
+    {{- with secret "secret/helloworld" -}}
+    {{ .Data.data.password }}
+    {{- end }}

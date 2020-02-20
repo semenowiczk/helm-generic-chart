@@ -1,0 +1,167 @@
+## Available parameters and their default values for the Generic chart.
+
+##----------------------------------------------------------------------------------------------------------------------
+## REQUIRED VALUES
+## These values are expected to be defined and passed in by the operator when deploying this helm chart.
+##----------------------------------------------------------------------------------------------------------------------
+
+## name is a string declaring deployment name which is passed into templates.
+name: generic-chart
+
+## containerImage is a map that describes the container image that should be used to serve the application
+## managed by this chart.
+containerImage:
+  ## The container image repository that should be used. E.g `nginx` ; `alpine` (string)
+  repository: alpine
+  ## The tag of the image (e.g `latest`) that should be used. We recommend using a
+  ## fixed tag or the SHA of the image. Avoid using the tags `latest`, `head`,
+  ## `canary`, or other tags that are designed to be “floating”. (string)
+  tag: 3.9.5
+  ## The image pull policy to employ. Determines when the image will be pulled in.
+  ## See the official Kubernetes docs for more info. (string)
+  imagePullPolicy: Always
+
+##----------------------------------------------------------------------------------------------------------------------
+## OPTIONAL VALUES
+## These values have defaults, but may be overridden by the operator
+##----------------------------------------------------------------------------------------------------------------------
+
+## deploymentStrategy is a map that configures the Update Strategy information for the Pod
+## See https:##kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+## serviceAccount is a map that configures the ServiceAccount information for the Pod.
+serviceAccount:
+  ## Whether or not to create a service account with the desired name. (bool)
+  create: false
+  ## The name of the ServiceAccount in the Namespace where the Pod is deployed
+  ## that should be used. By default this is the default ServiceAccount of the
+  ## Namespace. (string)
+  name:
+
+## service is a map that specifies the configuration for the Service resource that is created by the chart.
+service:
+  enabled: true
+  ## Configures the service type for the main Vault service.  Can be ClusterIP or NodePort.
+  type: ClusterIP
+  ## clusterIP controls whether a Cluster IP address is attached to the
+  ## Vault service within Kubernetes.  By default the Vault service will
+  ## be given a Cluster IP address, set to None to disable.  When disabled
+  ## Kubernetes will create a "headless" service.  Headless services can be
+  ## used to communicate with pods directly through DNS instead of a round robin
+  ## load balancer.
+  clusterIP: None
+  ## Port on which service is listening
+  port: 42
+  ## Target port to which the service should be mapped to
+  targetPort: 42
+  ## Name of the port
+  portName: default
+
+## replicaCount can be used to configure the number of replica pods that should be deployed and maintained at any given
+## point in time. For example, setting to 3 will signal Kubernetes (via the Deployment contoller) to maintain 3 pods.
+replicaCount: 1
+## specify restart policy for the Pod
+restartPolicy: Always
+
+## schedule can be used to run Jobs on a time-based schedule.
+## Must be in cron time format. Ref: https://crontab.guru/
+# schedule: "0 2 * * *"
+
+## env is a map of strings that specifies hard coded environment variables that should be set on the
+## application container. The keys will be mapped to environment variable keys, with the values mapping to the
+## environment variable values.
+# env:
+#   MARKET: cap
+
+## envSecrets is a map of strings that specifies hard coded environment variables that should be set on the
+## application container. The keys will be mapped to environment variable keys, with the value of the specified
+## Secret resource content.
+# envSecrets:
+#   envSecretVariable: somesecret
+
+## containerCommand is a list of strings that indicate a custom command to run for the container in place of the default
+## configured on the image. Omit to run the default command configured on the image.
+# containerCommand: ["cat", "/vault/secrets/newsecret"]
+
+## args can be used to specify additional command line arguments.
+# args: ["YOUR", "CUSTOM", "ARGS"]
+
+## configMaps is a map that specifies the ConfigMap resources that should be exposed to the main application container. Each
+## entry in the map represents a ConfigMap resource. The key refers to the name of the ConfigMap that should be exposed,
+## with the value specifying the content of the ConfigMap.
+# configMaps:
+#   whitelist: |-
+#     173.205.61.46/32 # Quebec
+#     18.202.44.206/32 # AWS Shared VPC Public IP's (vpc-0bad99876069a0bc6)
+
+## secrets is a map that specifies the Secret resources that should be exposed to the main application container. Each
+## entry in the map represents a Secret resource. The key refers to the name of the secret that should be exposed,
+## with the value specifying the content of the Secret.
+# secrets:
+#   somesecret: "somesecretcontent"
+
+## volumes is a map that configures additional Volumes.
+# volumes:
+# - name: vol
+#   configMap:
+#     defaultMode: 420
+#     name: generic-chart
+#     optional: false
+
+## volumeMounts is a map that configures volume mounts. This is useful for images
+## whose data mount paths are different than the default.
+# volumeMounts:
+# - name: vol
+#   mountPath: /app/config
+#   readOnly: true
+
+## rbac is a map that configures the Role-based Access Control.
+rbac:
+  ## Specifies whether rbac resources must be created.
+  create: false
+  # rules:
+  # - apiGroups:
+  #   - ""
+  #   resources:
+  #   - configmaps
+  #   verbs:
+  #   - get
+  #   - list
+  #   - watch
+  #   - update
+
+## deploymentAnnotations will add the provided map to the annotations for the Deployment resource created by this chart.
+## The keys and values are free form, but subject to the limitations of Kubernetes resource annotations.
+## NOTE: This variable is injected directly into the deployment spec.
+# deploymentAnnotations:
+  ## from https://github.com/hashicorp/vault-k8s/blob/master/agent-inject/agent/annotations.go
+  ## AnnotationAgentInject is the key of the annotation that controls whether
+  ## injection is explicitly enabled or disabled for a pod. This should
+  ## be set to a true or false value
+  # vault.hashicorp.com/agent-inject: "true"
+  ## AnnotationVaultRole specifies the role to be used for the Kubernetes auto-auth
+  ## method.
+  # vault.hashicorp.com/role: "myapp"
+  ## AnnotationAgentInjectSecret is the key annotation that configures Vault
+  ## Agent to retrieve the secrets from Vault required by the app.  The name
+  ## of the secret is any unique string after "vault.hashicorp.com/agent-inject-secret-",
+  ## such as "vault.hashicorp.com/agent-inject-secret-foobar".  The value is the
+  ## path in Vault where the secret is located.
+  # vault.hashicorp.com/agent-inject-secret-foobar.txt: "secret/someSecret"
+  ## AnnotationAgentInjectTemplate is the key annotation that configures Vault
+  ## Agent what template to use for rendering the secrets.  The name
+  ## of the template is any unique string after "vault.hashicorp.com/agent-inject-template-",
+  ## such as "vault.hashicorp.com/agent-inject-template-foobar".  This should map
+  ## to the same unique value provided in ""vault.hashicorp.com/agent-inject-secret-".
+  ## If not provided, a default generic template is used.
+  # vault.hashicorp.com/agent-inject-template-foobar.txt: |
+  #   {{- with secret "secret/someSecret" -}}
+  #   exampleuser: {{ .Data.data.user }}
+  #   {{- end }}
+
+

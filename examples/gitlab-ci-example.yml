@@ -1,0 +1,34 @@
+variables:
+  NAMESPACE: kris
+
+stages:
+  - Helm dry-run
+  - Helm deployment
+
+before_script:
+  - helm init --client-only
+  - helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+  - helm repo update
+
+image:
+    name: tmhub.io/sre-intl/helm/generic-chart:0.1.5
+
+.template: &tags
+  tags:
+    - k8s-tools3
+
+# ----------- some-service -----------------------------------------------------------
+some-service_dry_run:
+  <<: *tags
+  stage: Helm dry-run
+  script:
+    - helm upgrade -i --force some-service /generic-chart -f values.yaml --dry-run
+
+some-service_deploy:
+  <<: *tags
+  stage: Helm deployment
+  when: manual
+  script:
+    - helm upgrade -i --force some-service /generic-chart -f values.yaml
+  only:
+  - master

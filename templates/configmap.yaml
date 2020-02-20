@@ -1,0 +1,12 @@
+{{- if .Values.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "name" . }}
+  namespace: {{ .Release.Namespace }}
+data:
+{{- range $key, $val := .Values.configMaps }}
+  {{ $key }}: |-
+{{ $val | indent 4}}
+{{- end }}
+{{- end -}}

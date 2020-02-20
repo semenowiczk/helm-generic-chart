@@ -1,0 +1,5 @@
+name: nginx-generic-chart
+containerImage:
+  repository: nginx
+  tag: 1.17.8
+  imagePullPolicy: Always
